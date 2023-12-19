@@ -1,0 +1,30 @@
+name: Build and Publish ESPHome firmware and website
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.yaml'
+
+jobs:
+  publish-sonoff-s31:
+    name: Sonoff S31
+    uses: esphome/workflows/.github/workflows/publish.yml@main
+    with:
+      files: sonoff-s31.yaml
+      name: Sonoff S31
+      manifest_filename: sonoff-s31-manifest.json
+      clean: false
+      esphome_version: latest
+  publish-martin-jerry-ss02:
+    name: Martin Jerry SS02
+    uses: esphome/workflows/.github/workflows/publish.yml@main
+    with:
+      files: martin-jerry-ss02.yaml
+      name: Martin Jerry SS02
+      manifest_filename: marting-jerry-ss02-manifest.json
+      clean: false
+      esphome_version: latest
+ 

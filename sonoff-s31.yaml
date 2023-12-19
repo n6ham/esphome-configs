@@ -1,0 +1,86 @@
+substitutions:
+  name: sonoff-s31
+  friendly_name: Sonoff S31
+  restore_mode: ALWAYS_ON
+  name_add_mac_suffix: "true"
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: ${name_add_mac_suffix}
+  platform: ESP8266
+  board: esp01_1m
+  project:
+    name: "n6ham.sonoff-s31"
+    version: "1.0"
+
+api:
+
+ota:
+
+logger:
+  baud_rate: 0 # (UART logging interferes with cse7766)
+
+web_server:
+  port: 80
+
+wifi:
+  ap: {} # This spawns an AP with the device name and mac address with no password.
+
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://n6ham/esphome-configs/sonoff-s31.yaml
+
+# Device Specific Config
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Button"
+    on_press:
+      - switch.toggle: relay
+    id: button
+  - platform: status
+    name: "Status"
+    id: plug_status
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal"
+    update_interval: 60s
+    id: signal
+  - platform: cse7766
+    current:
+      name: "Current"
+      accuracy_decimals: 1
+    voltage:
+      name: "Voltage"
+      accuracy_decimals: 1
+    power:
+      name: "Power"
+      accuracy_decimals: 1
+      id: my_power
+  - platform: total_daily_energy
+    name: "Daily Energy"
+    power_id: my_power
+
+switch:
+  - platform: gpio
+    name: "Relay"
+    pin: GPIO12
+    id: relay
+    restore_mode: ${restore_mode}
+
+time:
+  - platform: sntp
+    id: sntp_time
+
+status_led:
+  pin: GPIO13

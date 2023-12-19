@@ -1,0 +1,126 @@
+substitutions:
+  name: martin-jerry-ss02
+  friendly_name: Martin Jerry SS02
+  restore_mode: RESTORE_DEFAULT_OFF
+  on_humidity_threshold: "85"
+  off_humidity_threshold: "75"
+  name_add_mac_suffix: "true"
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: ${name_add_mac_suffix}
+  platform: ESP8266
+  board: esp8285
+  project:
+    name: "n6ham.martin-jerry-ss02"
+    version: "1.0"
+
+api:
+
+ota:
+
+logger:
+
+web_server:
+  port: 80
+
+wifi:
+  ap: {} # This spawns an AP with the device name and mac address with no password.
+
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://n6ham/esphome-configs/martin-jerry-ss02.yaml
+
+i2c:
+  sda: GPIO13
+  scl: GPIO04
+
+number:
+  - platform: template
+    name: "${friendly_name} On Humidity Threshold"
+    id: on_humidity_threshold_ui
+    unit_of_measurement: "%"
+    min_value: 0
+    max_value: 100
+    step: 5
+    mode: box
+    update_interval: never
+    optimistic: true
+    restore_value: true
+    initial_value: ${on_humidity_threshold}
+    icon: "mdi:water-percent"
+    entity_category: config
+    on_value:
+      - lambda: 'id(aht10_sensor).update();'
+  - platform: template
+    name: "${friendly_name} Off Humidity Threshold"
+    id: off_humidity_threshold_ui
+    unit_of_measurement: "%"
+    min_value: 0
+    max_value: 100
+    step: 5
+    mode: box
+    update_interval: never
+    optimistic: true
+    restore_value: true
+    initial_value: ${off_humidity_threshold}
+    icon: "mdi:water-percent"
+    entity_category: config
+    on_value:
+      - lambda: 'id(aht10_sensor).update();'
+
+sensor:
+  - platform: aht10
+    id: aht10_sensor
+    update_interval: 30s
+    humidity:
+      name: "${friendly_name} Humidity"
+      on_value:
+        then:
+          - lambda: |-
+              if (x >= id(on_humidity_threshold_ui).state) {
+                id(relay).turn_on();
+              } else if (x >= id(off_humidity_threshold_ui).state) {
+                id(relay).turn_off();
+              }
+
+switch:
+  - platform: gpio
+    id: relay
+    name: "${friendly_name}"
+    pin: GPIO05
+    on_turn_on:
+      - switch.turn_on: blue_led
+      - switch.turn_off: red_led
+    on_turn_off:
+      - switch.turn_on: blue_led
+      - switch.turn_on: red_led
+  - platform: gpio
+    pin: GPIO12
+    id: red_led
+    internal: true
+    inverted: true
+  - platform: gpio
+    pin: GPIO14
+    id: blue_led
+    internal: true
+    inverted: true
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO03
+      mode: INPUT_PULLUP
+      inverted: true
+    id: main_button
+    internal: true
+    on_press:
+      - switch.toggle: relay
+
+button:
+  - platform: restart
+    id: restart_button
+    name: "${friendly_name} Restart"
+    entity_category: diagnostic
