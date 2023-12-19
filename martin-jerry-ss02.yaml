@@ -90,6 +90,7 @@ switch:
   - platform: gpio
     id: relay
     name: "${friendly_name}"
+    icon: mdi:fan
     pin: GPIO05
     on_turn_on:
       - switch.turn_on: blue_led
