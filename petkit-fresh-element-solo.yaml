@@ -16,6 +16,7 @@ esphome:
     name: "n6ham.petkit-fresh-element-solo"
     version: "1.0"
   on_boot:
+    - lambda: id(hopper_empty).publish_state(false);
     - light.turn_on:
         id: led
         effect: fast_blink  
@@ -51,6 +52,10 @@ globals:
     type: int
   - id: food_sensor_count
     type: int
+  - id: last_food_sensor_count
+    type: int  
+    initial_value: '-1'
+    restore_value: True
 
 script:
   - id: actuate_feeder
@@ -59,7 +64,7 @@ script:
     then:
       - if:
           condition:
-            lambda: 'return scoops >= 0;'
+            lambda: return scoops >= 0;
           then:
             - logger.log:
                 level: INFO
@@ -518,12 +523,13 @@ binary_sensor:
       then:
         - lambda: |-
             id(food_sensor_count) += 1;
+            id(last_food_sensor_count) = id(food_sensor_count);
 
   - id: hopper_empty
     name: Hopper Is Empty
     platform: template
-    entity_category: diagnostic
-
+    lambda: |-
+      return (id(last_food_sensor_count) == 0);
 switch:
   - id: enable_sensors
     internal: true
@@ -547,7 +553,8 @@ switch:
               lambda: |-
                 return id(food_sensor_count) == 0;
             then:
-              - lambda: id(hopper_empty).publish_state(true);
+              - lambda: |-
+                  id(last_food_sensor_count) = 0;
               - homeassistant.event:
                   event: "esphome.cat_feeder_empty"
                   data:
@@ -559,8 +566,6 @@ switch:
               - logger.log:
                   level: ERROR
                   format: "Food not dispensed"
-            else:
-              - lambda: id(hopper_empty).publish_state(false);
 
   - id: feed_forward
     internal: true
@@ -598,4 +603,4 @@ button:
       - lambda: id(actuate_feeder)->execute((int) id(default_scoops).state);
 
   - platform: restart
-    name: "Restart"    
+    name: "Restart"
