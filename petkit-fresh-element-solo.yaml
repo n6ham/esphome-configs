@@ -1,5 +1,5 @@
 substitutions:
-  name: petkit-fresh-element-solo
+  name: fresh-element-solo
   friendly_name: Petkit Fresh Element Solo
   device_description: "Petkit Fresh Element Solo Pet Feeder"
   default_scoops: "1"
@@ -12,10 +12,6 @@ esphome:
   friendly_name: $friendly_name
   name_add_mac_suffix: $name_add_mac_suffix
   comment: $device_description
-  platform: ESP32
-  board: esp32dev
-  framework:
-    type: arduino
   project:
     name: "n6ham.petkit-fresh-element-solo"
     version: "1.0"
