@@ -557,18 +557,18 @@ switch:
     on_turn_on:
       then:
         - lambda: |-
-            id(feeder_state).publish_state("Feeder Motor On");
+            id(feeder_state).publish_state("${friendly_name} feeder motor on");
     on_turn_off:
       then:
         - lambda: |-
-            id(feeder_state).publish_state("Feeder Motor Off");
+            id(feeder_state).publish_state("${friendly_name} feeder motor off");
         - if:
             condition:
               lambda: |-
                 return id(food_sensor_count) == 0;
             then:
               - lambda: |-
-                  id(feeder_state).publish_state("Feeder Hopper Empty");
+                  id(feeder_state).publish_state("${friendly_name} hopper is empty");
               - lambda: |-
                   id(last_food_sensor_count) = 0;
               - homeassistant.event:
