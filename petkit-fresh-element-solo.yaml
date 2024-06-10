@@ -569,7 +569,6 @@ switch:
             then:
               - lambda: |-
                   id(feeder_state).publish_state("${friendly_name} hopper is empty");
-              - lambda: |-
                   id(last_food_sensor_count) = 0;
               - homeassistant.event:
                   event: "esphome.cat_feeder_empty"
