@@ -64,7 +64,7 @@ script:
     then:
       - if:
           condition:
-            lambda: return scoops >= 0;
+            lambda: return scoops > 0;
           then:
             - logger.log:
                 level: INFO
