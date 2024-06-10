@@ -528,8 +528,16 @@ binary_sensor:
   - id: hopper_empty
     name: Hopper Is Empty
     platform: template
+    entity_category: diagnostic
     lambda: |-
       return (id(last_food_sensor_count) == 0);
+
+text_sensor:
+  - platform: template
+    name: State
+    id: feeder_state
+    entity_category: diagnostic
+
 switch:
   - id: enable_sensors
     internal: true
@@ -546,13 +554,21 @@ switch:
       number: GPIO19
     restore_mode: ALWAYS_OFF
     disabled_by_default: true
+    on_turn_on:
+      then:
+        - lambda: |-
+            id(feeder_state).publish_state("Feeder Motor On");
     on_turn_off:
       then:
+        - lambda: |-
+            id(feeder_state).publish_state("Feeder Motor Off");
         - if:
             condition:
               lambda: |-
                 return id(food_sensor_count) == 0;
             then:
+              - lambda: |-
+                  id(feeder_state).publish_state("Feeder Hopper Empty");
               - lambda: |-
                   id(last_food_sensor_count) = 0;
               - homeassistant.event:
