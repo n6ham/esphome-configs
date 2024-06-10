@@ -519,6 +519,11 @@ binary_sensor:
         - lambda: |-
             id(food_sensor_count) += 1;
 
+  - id: hopper_empty
+    name: Hopper Is Empty
+    platform: template
+    entity_category: diagnostic
+
 switch:
   - id: enable_sensors
     internal: true
@@ -542,13 +547,20 @@ switch:
               lambda: |-
                 return id(food_sensor_count) == 0;
             then:
+              - lambda: id(hopper_empty).publish_state(true);
               - homeassistant.event:
-                  event: "esphome.pet_feeder_empty"
+                  event: "esphome.cat_feeder_empty"
+                  data:
+                    message: "${friendly_name} hopper is empty"
+              - homeassistant.service:
+                  service: persistent_notification.create
                   data:
                     message: "${friendly_name} hopper is empty"
               - logger.log:
                   level: ERROR
                   format: "Food not dispensed"
+            else:
+              - lambda: id(hopper_empty).publish_state(false);
 
   - id: feed_forward
     internal: true
