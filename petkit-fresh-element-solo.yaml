@@ -1,0 +1,593 @@
+substitutions:
+  name: petkit-fresh-element-solo
+  friendly_name: Petkit Fresh Element Solo
+  device_description: "Petkit Fresh Element Solo Pet Feeder"
+  default_scoops: "1"
+  min_scoops: "0"
+  max_scoops: "6"
+  name_add_mac_suffix: "true"
+
+esphome:
+  name: $name
+  friendly_name: $friendly_name
+  name_add_mac_suffix: $name_add_mac_suffix
+  comment: $device_description
+  platform: ESP32
+  board: esp32dev
+  framework:
+    type: arduino
+  project:
+    name: "n6ham.petkit-fresh-element-solo"
+    version: "1.0"
+  on_boot:
+    - light.turn_on:
+        id: led
+        effect: fast_blink  
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+api:
+
+ota:
+
+logger:
+  level: INFO
+  baud_rate: 0
+
+web_server:
+  port: 80
+
+wifi:
+  ap: {} # This spawns an AP with the device name and mac address with no password.
+
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://n6ham/esphome-configs/petkit-fresh-element-solo.yaml
+
+globals:
+  - id: scoops_count
+    type: int
+  - id: max_scoops
+    type: int
+  - id: food_sensor_count
+    type: int
+
+script:
+  - id: actuate_feeder
+    parameters: 
+      scoops: int
+    then:
+      - if:
+          condition:
+            lambda: 'return scoops >= 0;'
+          then:
+            - logger.log:
+                level: INFO
+                format: "Serving %d scoops"
+                args: [ scoops ]
+            - lambda: |-
+                id(scoops_count) = 0;
+                id(food_sensor_count) = 0;
+                id(max_scoops) = scoops;
+            - switch.turn_on: feed_forward
+
+light:
+  - platform: binary
+    name: Status Led
+    id: led
+    output: led_output
+    effects:
+      - strobe:
+          name: fast_blink
+          colors:
+            - state: True
+              duration: 125ms
+            - state: False
+              duration: 125ms
+    internal: True
+
+output:
+  - id: led_output
+    platform: gpio
+    pin: GPIO5
+  - platform: ledc
+    pin: GPIO16
+    id: rtttl_output
+
+rtttl:
+  output: rtttl_output
+
+interval:
+  - interval: 1s
+    then:
+      if:
+        condition:
+          wifi.connected:
+        then:
+          - light.turn_on:
+              id: led
+              effect: None
+        else:
+          - light.turn_on:
+              id: led
+              effect: fast_blink
+
+uart:
+  tx_pin: GPIO1
+  rx_pin: GPIO3
+  baud_rate: 9600
+
+number:
+  - platform: template
+    id: default_scoops
+    name: "Manual dispense scoop count"
+    icon: mdi:cup
+    entity_category: config
+    min_value: 1
+    max_value: $max_scoops
+    initial_value: 1
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0000
+    name: "00:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0100
+    name: "01:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0200
+    name: "02:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0300
+    name: "03:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0400
+    name: "04:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0500
+    name: "05:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0600
+    name: "06:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0700
+    name: "07:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0800
+    name: "08:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_0900
+    name: "09:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1000
+    name: "10:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1100
+    name: "11:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1200
+    name: "12:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1300
+    name: "13:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1400
+    name: "14:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1500
+    name: "15:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1600
+    name: "16:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1700
+    name: "17:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1800
+    name: "18:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_1900
+    name: "19:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_2000
+    name: "20:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_2100
+    name: "21:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_2200
+    name: "22:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+  - platform: template
+    id: schedule_cups_2300
+    name: "23:00 cups"
+    icon: mdi:cup
+    entity_category: config
+    min_value: $min_scoops
+    max_value: $max_scoops
+    initial_value: 0
+    optimistic: true
+    step: 1
+    restore_value: true
+    unit_of_measurement: scoops
+    mode: slider
+
+time:
+  - id: sntp_time
+    platform: sntp
+    on_time:
+      - hours: '*'
+        minutes: 0
+        seconds: 0
+        then:
+          - lambda: |-
+              auto hour = id(sntp_time).now().hour;
+              switch (hour) {
+                case 0: id(actuate_feeder)->execute((int) id(schedule_cups_0000).state); break;
+                case 1: id(actuate_feeder)->execute((int) id(schedule_cups_0100).state); break;
+                case 2: id(actuate_feeder)->execute((int) id(schedule_cups_0200).state); break;
+                case 3: id(actuate_feeder)->execute((int) id(schedule_cups_0300).state); break;
+                case 4: id(actuate_feeder)->execute((int) id(schedule_cups_0400).state); break;
+                case 5: id(actuate_feeder)->execute((int) id(schedule_cups_0500).state); break;
+                case 6: id(actuate_feeder)->execute((int) id(schedule_cups_0600).state); break;
+                case 7: id(actuate_feeder)->execute((int) id(schedule_cups_0700).state); break;
+                case 8: id(actuate_feeder)->execute((int) id(schedule_cups_0800).state); break;
+                case 9: id(actuate_feeder)->execute((int) id(schedule_cups_0900).state); break;
+                case 10: id(actuate_feeder)->execute((int) id(schedule_cups_1000).state); break;
+                case 11: id(actuate_feeder)->execute((int) id(schedule_cups_1100).state); break;
+                case 12: id(actuate_feeder)->execute((int) id(schedule_cups_1200).state); break;
+                case 13: id(actuate_feeder)->execute((int) id(schedule_cups_1300).state); break;
+                case 14: id(actuate_feeder)->execute((int) id(schedule_cups_1400).state); break;
+                case 15: id(actuate_feeder)->execute((int) id(schedule_cups_1500).state); break;
+                case 16: id(actuate_feeder)->execute((int) id(schedule_cups_1600).state); break;
+                case 17: id(actuate_feeder)->execute((int) id(schedule_cups_1700).state); break;
+                case 18: id(actuate_feeder)->execute((int) id(schedule_cups_1800).state); break;
+                case 19: id(actuate_feeder)->execute((int) id(schedule_cups_1900).state); break;
+                case 20: id(actuate_feeder)->execute((int) id(schedule_cups_2000).state); break;
+                case 21: id(actuate_feeder)->execute((int) id(schedule_cups_2100).state); break;
+                case 22: id(actuate_feeder)->execute((int) id(schedule_cups_2200).state); break;
+                case 23: id(actuate_feeder)->execute((int) id(schedule_cups_2300).state); break;
+              }
+binary_sensor:
+  - id: manual_feed_button
+    internal: true
+    platform: gpio
+    pin: 
+      number: GPIO34
+      inverted: true
+    on_press:
+      then:
+        - lambda: id(actuate_feeder)->execute((int) id(default_scoops).state);
+
+  - id: motor_sensor
+    internal: true
+    platform: gpio
+    pin: 
+      number: GPIO27
+      inverted: true
+    on_press:
+      then:
+        - lambda: |-
+            id(scoops_count) += 1;
+            if (id(scoops_count) >= id(max_scoops)) {
+              id(feed_forward).turn_off();
+            }
+        - logger.log:
+            level: INFO
+            format: "%d/%d scoops served"
+            args: [ id(scoops_count), id(max_scoops) ]
+
+  - id: feed_sensor
+    internal: true
+    platform: gpio
+    pin: 
+      number: GPIO14
+    on_press:
+      then:
+        - lambda: |-
+            id(food_sensor_count) += 1;
+
+switch:
+  - id: enable_sensors
+    internal: true
+    platform: gpio
+    pin: 
+      number: GPIO33
+    restore_mode: ALWAYS_ON
+    disabled_by_default: true
+
+  - id: enable_feeder_motor
+    internal: true
+    platform: gpio
+    pin: 
+      number: GPIO19
+    restore_mode: ALWAYS_OFF
+    disabled_by_default: true
+    on_turn_off:
+      then:
+        - if:
+            condition:
+              lambda: |-
+                return id(food_sensor_count) == 0;
+            then:
+              - homeassistant.event:
+                  event: "esphome.pet_feeder_empty"
+                  data:
+                    message: "${friendly_name} hopper is empty"
+              - logger.log:
+                  level: ERROR
+                  format: "Food not dispensed"
+
+  - id: feed_forward
+    internal: true
+    interlock: &interlock_group [feed_forward, feed_reverse]
+    platform: gpio
+    pin: 
+      number: GPIO18
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      then:
+        - switch.turn_on: enable_feeder_motor
+    on_turn_off:
+      then:
+        - switch.turn_off: enable_feeder_motor
+
+  - id: feed_reverse
+    internal: true
+    interlock: *interlock_group
+    platform: gpio
+    pin: 
+      number: GPIO17
+    restore_mode: ALWAYS_OFF
+
+sensor:
+  - platform: wifi_signal
+    name: "Signal"
+    update_interval: 60s
+
+button:
+  - name: "Dispense Food"
+    id: dispense_food
+    icon: mdi:food-turkey
+    platform: template
+    on_press:
+      - lambda: id(actuate_feeder)->execute((int) id(default_scoops).state);
+
+  - platform: restart
+    name: "Restart"    
