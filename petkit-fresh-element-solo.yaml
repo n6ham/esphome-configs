@@ -507,6 +507,7 @@ binary_sensor:
             id(scoops_count) += 1;
             if (id(scoops_count) >= id(max_scoops)) {
               id(feed_forward).turn_off();
+              id(feeder_state).publish_state("Food Dispensed");
             }
         - logger.log:
             level: INFO
