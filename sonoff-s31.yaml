@@ -17,6 +17,7 @@ esphome:
 api:
 
 ota:
+  platform: esphome
 
 logger:
   baud_rate: 0 # (UART logging interferes with cse7766)
