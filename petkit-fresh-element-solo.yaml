@@ -29,6 +29,7 @@ esp32:
 api:
 
 ota:
+  platform: esphome
 
 logger:
   level: INFO
