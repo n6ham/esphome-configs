@@ -59,6 +59,12 @@ globals:
     restore_value: True
 
 script:
+  - id: play_rtttl
+    parameters:
+      song_str: string
+    then:
+      - rtttl.play:
+          rtttl: !lambda 'return song_str;'
   - id: actuate_feeder
     parameters: 
       scoops: int
@@ -72,6 +78,7 @@ script:
                 format: "Serving %d scoops"
                 args: [ scoops ]
             - lambda: |-
+                id(play_rtttl)->execute("two_shorts:d=4,o=5,b=100:16e6,16e6");
                 id(scoops_count) = 0;
                 id(food_sensor_count) = 0;
                 id(max_scoops) = scoops;
@@ -453,6 +460,15 @@ time:
   - id: sntp_time
     platform: sntp
     on_time:
+      # Every 5 minutes
+      - hours: 7-22
+        minutes: /5
+        seconds: 1
+        then:
+          - lambda: |-
+              if (id(last_food_sensor_count) == 0) {
+                id(play_rtttl)->execute("siren:d=8,o=5,b=100:d,e,d,e,d,e,d,e");
+              }
       - hours: '*'
         minutes: 0
         seconds: 0
@@ -485,6 +501,7 @@ time:
                 case 22: id(actuate_feeder)->execute((int) id(schedule_cups_2200).state); break;
                 case 23: id(actuate_feeder)->execute((int) id(schedule_cups_2300).state); break;
               }
+
 binary_sensor:
   - id: manual_feed_button
     internal: true
@@ -509,6 +526,7 @@ binary_sensor:
             if (id(scoops_count) >= id(max_scoops)) {
               id(feed_forward).turn_off();
               id(feeder_state).publish_state("Food Dispensed");
+              id(play_rtttl)->execute("one_short:d=4,o=5,b=100:16e6");
             }
         - logger.log:
             level: INFO
@@ -616,6 +634,6 @@ button:
     platform: template
     on_press:
       - lambda: id(actuate_feeder)->execute((int) id(default_scoops).state);
-
   - platform: restart
     name: "Restart"
+    disabled_by_default: true
