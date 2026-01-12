@@ -12,6 +12,10 @@ esphome:
   friendly_name: $friendly_name
   name_add_mac_suffix: $name_add_mac_suffix
   comment: $device_description
+  name_add_mac_suffix: true
+  project:
+    name: n6rdv.petkit-fresh-element-solo
+    version: 1.1
   on_boot:
     - light.turn_on:
         id: led
